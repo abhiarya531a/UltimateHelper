@@ -36,7 +36,7 @@ local checkpoint, blip
 
 function download_version(callback)
     lua_thread.create(function()
-        local handle = io.popen('curl -s "' .. versionURL .. '"')
+        local handle = io.popen('curl -s "' .. UPDATE_URL_VERSION .. '"')
         local data = handle:read("*a")
         handle:close()
 
@@ -50,7 +50,7 @@ end
 
 function download_script(callback)
     lua_thread.create(function()
-        local handle = io.popen('curl -s "' .. updateURL .. '"')
+        local handle = io.popen('curl -s "' .. UPDATE_URL_SCRIPT .. '"')
         local data = handle:read("*a")
         handle:close()
 
@@ -59,18 +59,18 @@ function download_script(callback)
             return
         end
 
-        local f = io.open(scriptPath, "w")
+        local f = io.open(LOCAL_SCRIPT_PATH, "w")
         if not f then
             callback(false)
             return
         end
+
         f:write(data)
         f:close()
 
         callback(true)
     end)
 end
-
 
 function checkForUpdates(auto)
 
@@ -94,7 +94,7 @@ function checkForUpdates(auto)
                 return
             end
 
-            -- No update
+            -- Up to date
             if remoteVer == localVer then
                 if not auto then
                     sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} No updates available.", -1)
@@ -107,7 +107,7 @@ function checkForUpdates(auto)
 
             download_script(function(success)
                 if success then
-                    -- Save version
+                    -- Save new version
                     local vf = io.open(getWorkingDirectory() .. "\\version.txt", "w")
                     vf:write(remoteVer)
                     vf:close()
@@ -122,9 +122,6 @@ function checkForUpdates(auto)
         end)
     end)
 end
-
-
-
 
 function main()
     repeat wait(100) until isSampAvailable()
@@ -1761,6 +1758,7 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
 
 
 
