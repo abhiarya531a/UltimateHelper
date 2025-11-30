@@ -1,6 +1,6 @@
 script_name("Ultimate Helper")
 script_author("Mike")
-script_version("1.2.0")
+script_version("1.2.1")
 
 local sampev = require 'lib.samp.events'
 local json = require 'dkjson'
@@ -1702,4 +1702,5 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
 
