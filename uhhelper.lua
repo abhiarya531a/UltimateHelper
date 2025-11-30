@@ -129,6 +129,10 @@ function main()
 
     register_commands()
 
+	lua_thread.create(function()
+        wait(1500)
+        checkForUpdates(true)
+    end)
 end
 
 
