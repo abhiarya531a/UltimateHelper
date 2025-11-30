@@ -135,8 +135,9 @@ function main()
     -- Auto update check (one time only)
     lua_thread.create(function()
         wait(1500)
-        checkForUpdates(true) -- true = auto mode, no spam
+        checkForUpdates(true)
     end)
+
 end
 
 
@@ -1760,6 +1761,7 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
 
 
 
