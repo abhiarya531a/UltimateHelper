@@ -8,6 +8,7 @@ local SCRIPT_VERSION = "1.2"
 local UPDATE_URL_VERSION = "https://raw.githubusercontent.com/abhiarya531a/UltimateHelper/main/version.txt"
 local UPDATE_URL_SCRIPT  = "https://raw.githubusercontent.com/abhiarya531a/UltimateHelper/main/uhhelper.lua"
 local LOCAL_SCRIPT_PATH  = getWorkingDirectory() .. "\\uhhelper.lua"
+local alreadyCheckedUpdate = false
 
 local requests = require 'requests'
 
@@ -32,57 +33,54 @@ else
 end
 
 local checkpoint, blip
-function checkForUpdates()
+function checkForUpdates(auto)
+    if alreadyCheckedUpdate and auto then return end -- prevents spam loop
+    if auto then alreadyCheckedUpdate = true end
+
     lua_thread.create(function()
-        sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF}Checking for updates...", -1)
+        sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Checking for updates...", -1)
 
-        -- download version
-        local response = requests.get(UPDATE_URL_VERSION)
-        if not response or response.status_code ~= 200 then
-            sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF}Update check failed.", -1)
-            return
-        end
+        local f = io.open(getWorkingDirectory() .. "\\version.txt", "r")
+        local localVer = f and f:read("*l") or "0"
+        if f then f:close() end
 
-        local onlineVersion = response.text:gsub("\n", ""):gsub("\r", "")
+        local remoteVer = download_version()
 
-        if onlineVersion ~= SCRIPT_VERSION then
-            sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF}Update found! Downloading...", -1)
+        if remoteVer and remoteVer ~= localVer then
+            sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Update found! Downloading...", -1)
 
-            -- download script
-            local newScript = requests.get(UPDATE_URL_SCRIPT)
-            if not newScript or newScript.status_code ~= 200 then
-                sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF}Failed to download update.", -1)
-                return
-            end
-
-            -- write file
-            local file = io.open(LOCAL_SCRIPT_PATH, "w")
-            file:write(newScript.text)
-            file:close()
-
-            sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF}Update installed! Restarting script...", -1)
-
-            -- safe restart
-            lua_thread.create(function()
-                wait(500)
-                thisScript():reload()
+            download_script(function(success)
+                if success then
+                    sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Update installed! Restarting script...", -1)
+                    wait(500)
+                    thisScript():reload()
+                else
+                    sampAddChatMessage("{FF0000}[Ultimate Helper]{FFFFFF} Update failed!", -1)
+                end
             end)
-
-            return
         else
-            sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF}You are on the latest version.", -1)
+            if not auto then
+                sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} No updates available.", -1)
+            end
         end
     end)
 end
 
 
+
 function main()
     repeat wait(100) until isSampAvailable()
-	checkForUpdates()
-    sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF} Loaded successfully. Use /uhhelp", -1)
+    sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Loaded successfully. Use /uhhelp", -1)
 
     register_commands()
+
+    -- Auto update check (one time only)
+    lua_thread.create(function()
+        wait(1500)
+        check_for_updates(true) -- true = auto mode, no spam
+    end)
 end
+
 
 ----------------------------------------------------
 -- Clear checkpoint
@@ -1704,3 +1702,4 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
