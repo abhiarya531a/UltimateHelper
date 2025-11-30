@@ -33,24 +33,85 @@ else
 end
 
 local checkpoint, blip
+
+function download_version(callback)
+    lua_thread.create(function()
+        local handle = io.popen('curl -s "' .. versionURL .. '"')
+        local data = handle:read("*a")
+        handle:close()
+
+        if data and data ~= "" then
+            callback(data:gsub("%s+", ""))
+        else
+            callback(nil)
+        end
+    end)
+end
+
+function download_script(callback)
+    lua_thread.create(function()
+        local handle = io.popen('curl -s "' .. updateURL .. '"')
+        local data = handle:read("*a")
+        handle:close()
+
+        if not data or data == "" then
+            callback(false)
+            return
+        end
+
+        local f = io.open(scriptPath, "w")
+        if not f then
+            callback(false)
+            return
+        end
+        f:write(data)
+        f:close()
+
+        callback(true)
+    end)
+end
+
+
 function checkForUpdates(auto)
-    if alreadyCheckedUpdate and auto then return end -- prevents spam loop
+
+    if alreadyCheckedUpdate and auto then return end
     if auto then alreadyCheckedUpdate = true end
 
     lua_thread.create(function()
         sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Checking for updates...", -1)
 
+        -- Read local version
         local f = io.open(getWorkingDirectory() .. "\\version.txt", "r")
         local localVer = f and f:read("*l") or "0"
         if f then f:close() end
 
-        local remoteVer = download_version()
+        -- Download remote version
+        download_version(function(remoteVer)
+            if not remoteVer then
+                if not auto then
+                    sampAddChatMessage("{FF0000}[Ultimate Helper]{FFFFFF} Failed to check for updates.", -1)
+                end
+                return
+            end
 
-        if remoteVer and remoteVer ~= localVer then
+            -- No update
+            if remoteVer == localVer then
+                if not auto then
+                    sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} No updates available.", -1)
+                end
+                return
+            end
+
+            -- Update found
             sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Update found! Downloading...", -1)
 
             download_script(function(success)
                 if success then
+                    -- Save version
+                    local vf = io.open(getWorkingDirectory() .. "\\version.txt", "w")
+                    vf:write(remoteVer)
+                    vf:close()
+
                     sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Update installed! Restarting script...", -1)
                     wait(500)
                     thisScript():reload()
@@ -58,13 +119,10 @@ function checkForUpdates(auto)
                     sampAddChatMessage("{FF0000}[Ultimate Helper]{FFFFFF} Update failed!", -1)
                 end
             end)
-        else
-            if not auto then
-                sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} No updates available.", -1)
-            end
-        end
+        end)
     end)
 end
+
 
 
 
@@ -1702,6 +1760,7 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
 
 
 
