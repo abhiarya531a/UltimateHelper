@@ -36,25 +36,23 @@ local checkpoint, blip
 
 function download_version(callback)
     lua_thread.create(function()
-        local handle = io.popen('curl -s "' .. UPDATE_URL_VERSION .. '"')
-        local data = handle:read("*a")
-        handle:close()
+        local r = requests.get(UPDATE_URL_VERSION)
 
-        if data and data ~= "" then
-            callback(data:gsub("%s+", ""))
+        if r ~= nil and r.status_code == 200 then
+            local ver = r.text:gsub("%s+", "")
+            callback(ver)
         else
             callback(nil)
         end
     end)
 end
 
+
 function download_script(callback)
     lua_thread.create(function()
-        local handle = io.popen('curl -s "' .. UPDATE_URL_SCRIPT .. '"')
-        local data = handle:read("*a")
-        handle:close()
+        local r = requests.get(UPDATE_URL_SCRIPT)
 
-        if not data or data == "" then
+        if r == nil or r.status_code ~= 200 then
             callback(false)
             return
         end
@@ -65,12 +63,13 @@ function download_script(callback)
             return
         end
 
-        f:write(data)
+        f:write(r.text)
         f:close()
 
         callback(true)
     end)
 end
+
 
 function checkForUpdates(auto)
 
@@ -1759,11 +1758,3 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
-
-
-
-
-
-
-
-
