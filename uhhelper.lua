@@ -1711,6 +1711,7 @@ function register_commands()
 
 	sampRegisterChatCommand("uhupdates", function()
 		sampAddChatMessage("{00FFCC}---- Ultimate Helper Updates ----", -1)
+		sampAddChatMessage("{FFFFFF}v1.2.1 {BBBBBB}- Added Auto Update(Beta)", -1) 
 		sampAddChatMessage("{FFFFFF}v1.2.0 {BBBBBB}- Added /def command", -1) 
 		sampAddChatMessage("{FFFFFF}v1.1.2 {BBBBBB}- Gang List Updated", -1)
 		sampAddChatMessage("{FFFFFF}v1.1.1 {BBBBBB}- Added /vehinfo command", -1)
@@ -1758,6 +1759,7 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
 
 
 
