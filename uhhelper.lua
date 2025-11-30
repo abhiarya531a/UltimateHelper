@@ -26,7 +26,6 @@ if file then
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF}JSON Decode Error: " .. err, -1)
     else
         def = data
-        sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF}Loaded definitions: " .. tostring(#def), -1)
     end
 else
     sampAddChatMessage("{00FFCC}[Ultimate Helper] {FFFFFF}FILE NOT FOUND: Definations.json", -1)
@@ -1766,6 +1765,7 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
 
 
 
