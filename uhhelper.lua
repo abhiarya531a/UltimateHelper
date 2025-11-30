@@ -74,27 +74,26 @@ function download_script(newVersion, callback)
     end)
 end
 
-
-
 function checkForUpdates(auto)
 
-    if alreadyCheckedUpdate and auto then return end
+    if auto and alreadyCheckedUpdate then return end
     if auto then alreadyCheckedUpdate = true end
 
     lua_thread.create(function()
+
         if not auto then
             sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Manually checking for updates...", -1)
         end
 
         sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Checking for updates...", -1)
 
-        -- Load local version
-        local f = io.open(getWorkingDirectory() .. "\\version.txt", "r")
+        local versionFile = getWorkingDirectory() .. "\\version.txt"
+        local f = io.open(versionFile, "r")
         local localVer = f and f:read("*l") or "0"
         if f then f:close() end
 
-        -- Load remote version
         download_version(function(remoteVer)
+
             if not remoteVer then
                 sampAddChatMessage("{FF0000}[Ultimate Helper]{FFFFFF} Failed to check for updates.", -1)
                 return
@@ -110,29 +109,39 @@ function checkForUpdates(auto)
             sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Update found! Downloading...", -1)
 
             download_script(remoteVer, function(success)
-                if success then
-                    sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Update installed! Restarting script...", -1)
-                    wait(400)
-                    thisScript():reload()
-                else
+
+                if not success then
                     sampAddChatMessage("{FF0000}[Ultimate Helper]{FFFFFF} Update failed!", -1)
+                    return
                 end
+
+                -- IMPORTANT: Save new version BEFORE reloading
+                local wf = io.open(versionFile, "w")
+                if wf then
+                    wf:write(remoteVer)
+                    wf:close()
+                end
+
+                sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Update installed! Restarting script...", -1)
+
+                wait(600)
+                thisScript():reload()
+
             end)
+
         end)
+
     end)
 end
 
-
 function main()
     repeat wait(100) until isSampAvailable()
-    sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Loaded successfully. Use /uhhelp", -1)
 
+    sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Loaded successfully. Use /uhhelp", -1)
     register_commands()
 
-	lua_thread.create(function()
-        wait(1500)
-        checkForUpdates(true)
-    end)
+    wait(1500) -- Good, prevents instant loop during startup
+    checkForUpdates(true)
 end
 
 
@@ -1757,6 +1766,7 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
 
 
 
