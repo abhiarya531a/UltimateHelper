@@ -1,10 +1,10 @@
 script_name("Ultimate Helper")
 script_author("Mike")
-script_version("1.2.1")
+script_version("1.2.3")
 
 local sampev = require 'lib.samp.events'
 local json = require 'dkjson'
-local SCRIPT_VERSION = "1.2.1"
+local SCRIPT_VERSION = "1.2.3"
 local UPDATE_URL_VERSION = "https://raw.githubusercontent.com/abhiarya531a/UltimateHelper/main/version.txt"
 local UPDATE_URL_SCRIPT  = "https://raw.githubusercontent.com/abhiarya531a/UltimateHelper/main/uhhelper.lua"
 local LOCAL_SCRIPT_PATH  = getWorkingDirectory() .. "\\uhhelper.lua"
@@ -1766,6 +1766,7 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
 
 
 
