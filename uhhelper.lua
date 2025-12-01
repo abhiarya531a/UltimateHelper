@@ -1620,8 +1620,32 @@ function cmdN(msg)
         sampAddChatMessage('USAGE: (/n)ewbie [text]', 0xAFAFAF)
         return
     end
-    sampSendChat('/newb ' .. msg)
+
+    local limit = 85  -- safe limit
+
+    if #msg <= limit then
+        sampSendChat("/newb " .. msg)
+        return
+    end
+
+    -- FIND SAFE BREAKPOINT (last space before limit)
+    local breakpoint = msg:sub(1, limit):match(".*() ")
+
+    if not breakpoint then
+        breakpoint = limit  -- fallback: no spaces found
+    end
+
+    -- FIRST PART: cut at last word boundary
+    local part1 = msg:sub(1, breakpoint - 1) .. "..."
+
+    -- SECOND PART: full word included
+    local part2 = "..." .. msg:sub(breakpoint + 1)
+
+    -- SEND MESSAGES
+    sampSendChat("/newb " .. part1)
+    sampSendChat("/g " .. part2)
 end
+
 
 function cmdAhr(params)
     if #params == 0 then
@@ -1765,6 +1789,7 @@ function register_commands()
         sampAddChatMessage("{00FFCC}[Ultimate Helper] {00FF00}All checkpoints cleared.", -1)
     end)
 end
+
 
 
 
