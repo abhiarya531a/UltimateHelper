@@ -2,7 +2,7 @@ script_name("Ultimate Helper")
 
 script_author("Mike")
 
-script_version("1.2.5")
+script_version("1.2.4")
 
 
 
@@ -10,7 +10,7 @@ local sampev = require 'lib.samp.events'
 
 local json = require 'dkjson'
 
-local SCRIPT_VERSION = "1.2.5"
+local SCRIPT_VERSION = "1.2.4"
 
 local UPDATE_URL_VERSION = "https://raw.githubusercontent.com/abhiarya531a/UltimateHelper/main/version.txt"
 
@@ -3284,13 +3284,13 @@ end
 
 function register_commands()
 
-    sampRegisterChatCommand("locganghq", function(params)
+    sampRegisterChatCommand("locghq", function(params)
 
         local id = tonumber(params)
 
         if not id then
 
-            sampAddChatMessage("{BBBBBB}Usage: /locganghq [Slot Number]", -1)
+            sampAddChatMessage("{BBBBBB}Usage: /locghq [Slot Number]", -1)
 
             return
 
@@ -3390,7 +3390,7 @@ function register_commands()
 
         sampAddChatMessage("{00FFCC}---- Ultimate Helper Commands ----", -1)
 
-        sampAddChatMessage("{FFFFFF}/locganghq [Slot Number] {BBBBBB}- Gang HQ locations", -1)
+        sampAddChatMessage("{FFFFFF}/locghq [Slot Number] {BBBBBB}- Gang HQ locations", -1)
 
         sampAddChatMessage("{FFFFFF}/locfachq [Name] {BBBBBB}- Faction HQ locations", -1)
 
@@ -3444,7 +3444,7 @@ function register_commands()
 
 		sampAddChatMessage("{FFFFFF}v1.1.1 {BBBBBB}- Added /iteminfo command", -1)
 
-		sampAddChatMessage("{FFFFFF}v1.1.0 {BBBBBB}- Fixed /locganghq command", -1)
+		sampAddChatMessage("{FFFFFF}v1.1.0 {BBBBBB}- Fixed /locghq command", -1)
 
 		sampAddChatMessage("{FFFFFF}v1.0.0 {BBBBBB}- Initial release", -1)
 
@@ -3529,6 +3529,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
