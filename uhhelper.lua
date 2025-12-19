@@ -245,8 +245,8 @@ local helperStats = {
 local waitingHelperStats = false
 
 local NON_RP_KEYWORDS = {
-    "admin", "owner", "boss", "king", "god", "pro", "killer", "lol", "gaylord", "sex"
-    "hitler", "gta", "rp", "samp", "youtube", "xx", "69", "420", "xxx", "gay", "sexy"
+    "admin", "owner", "boss", "king", "god", "pro", "killer", "lol", "gaylord", "sex",
+    "hitler", "gta", "rp", "samp", "youtube", "xx", "69", "420", "xxx", "gay", "sexy",
 }
 
 local FAMOUS_NAMES = {
@@ -3697,6 +3697,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
