@@ -2,7 +2,7 @@ script_name("Ultimate Helper")
 
 script_author("Mike")
 
-script_version("1.2.4")
+script_version("1.2.5")
 
 
 
@@ -10,7 +10,7 @@ local sampev = require 'lib.samp.events'
 
 local json = require 'dkjson'
 
-local SCRIPT_VERSION = "1.2.4"
+local SCRIPT_VERSION = "1.2.5"
 
 local UPDATE_URL_VERSION = "https://raw.githubusercontent.com/abhiarya531a/UltimateHelper/main/version.txt"
 
@@ -149,122 +149,66 @@ end
 
 
 function checkForUpdates(auto)
-
-
-
     if auto and alreadyCheckedUpdate then return end
-
     if auto then alreadyCheckedUpdate = true end
-
-
 
     lua_thread.create(function()
 
-
-
         if not auto then
-
             sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Manually checking for updates...", -1)
-
         end
 
-
-
-        sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Checking for updates...", -1)
-
-
-
         local versionFile = getWorkingDirectory() .. "\\version.txt"
+        local localVer = SCRIPT_VERSION   -- fallback
 
         local f = io.open(versionFile, "r")
-
-        local localVer = f and f:read("*l") or "0"
-
-        if f then f:close() end
-
-
+        if f then
+            local line = f:read("*l")
+            if line and line ~= "" then
+                localVer = line
+            end
+            f:close()
+        end
 
         download_version(function(remoteVer)
 
-
-
             if not remoteVer then
-
                 sampAddChatMessage("{FF0000}[Ultimate Helper]{FFFFFF} Failed to check for updates.", -1)
-
                 return
-
             end
-
-
 
             if localVer == remoteVer then
-
                 if not auto then
-
                     sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} No updates available.", -1)
-
                 end
-
                 return
-
             end
-
-
 
             sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Update found! Downloading...", -1)
 
-
-
             download_script(remoteVer, function(success)
 
-
-
                 if not success then
-
                     sampAddChatMessage("{FF0000}[Ultimate Helper]{FFFFFF} Update failed!", -1)
-
                     return
-
                 end
 
-
-
-                -- IMPORTANT: Save new version BEFORE reloading
-
+                -- Save version AFTER successful download
                 local wf = io.open(versionFile, "w")
-
                 if wf then
-
                     wf:write(remoteVer)
-
                     wf:close()
-
                 end
-
-
 
                 sampAddChatMessage("{00FFCC}[Ultimate Helper]{FFFFFF} Update installed! Restarting script...", -1)
 
-
-
-                wait(600)
-
+                wait(300)
                 thisScript():reload()
-
-
-
             end)
-
-
-
         end)
-
-
-
     end)
-
 end
+
 
 
 
@@ -3585,6 +3529,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
