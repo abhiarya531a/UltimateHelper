@@ -581,7 +581,7 @@ end
 
 function cmdHelperStats()
     waitingHelperStats = true
-    sampSendChat("/helper")
+    sampSendChat("/helpers")
 
     sampAddChatMessage(
         "{00FFCC}[Ultimate Helper]{FFFFFF} Fetching helper stats...",
@@ -3723,6 +3723,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
