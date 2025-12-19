@@ -2,7 +2,7 @@ script_name("Ultimate Helper")
 
 script_author("Mike")
 
-script_version("1.2.6")
+script_version("1.2.7")
 
 
 
@@ -3723,6 +3723,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
