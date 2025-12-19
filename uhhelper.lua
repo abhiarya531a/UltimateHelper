@@ -536,16 +536,13 @@ function sampev.onServerMessage(color, text)
 
     waitingHelperStats = false
 
-    local level, name = text:match("^(%w+ Helper) (.+) {")
-    if not level then return end
+    -- Extract helper level and name
+    local level, name = text:match("^(%w+ Helper)%s+(.+)%s+|")
+    if not level or not name then return end
 
-    local newbie = text:match("Newbie Chats: {FFFFFF}(%d+)")
-    local requests = text:match("Requests Accepted: {FFFFFF}(%d+)")
-    local tours = text:match("Tours: {FFFFFF}(%d+)")
-
-    newbie = tonumber(newbie) or 0
-    requests = tonumber(requests) or 0
-    tours = tonumber(tours) or 0
+    local newbie = tonumber(text:match("Newbie Chats:%s*(%d+)")) or 0
+    local requests = tonumber(text:match("Requests Accepted:%s*(%d+)")) or 0
+    local tours = tonumber(text:match("Tours:%s*(%d+)")) or 0
 
     sampAddChatMessage("{00FFCC}------ Helper Statistics ------", -1)
     sampAddChatMessage("{FFFFFF}Helper Name: {00FFCC}" .. name, -1)
@@ -578,6 +575,7 @@ function sampev.onServerMessage(color, text)
 
     sampAddChatMessage("{00FFCC}--------------------------------", -1)
 end
+
 
 function cmdHelperStats()
     waitingHelperStats = true
@@ -3723,6 +3721,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
