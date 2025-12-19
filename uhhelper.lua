@@ -10,7 +10,7 @@ local sampev = require 'lib.samp.events'
 
 local json = require 'dkjson'
 
-local SCRIPT_VERSION = "1.2.6"
+local SCRIPT_VERSION = "1.2.7"
 
 local UPDATE_URL_VERSION = "https://raw.githubusercontent.com/abhiarya531a/UltimateHelper/main/version.txt"
 
@@ -3721,6 +3721,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
