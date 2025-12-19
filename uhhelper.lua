@@ -10,7 +10,7 @@ local sampev = require 'lib.samp.events'
 
 local json = require 'dkjson'
 
-local SCRIPT_VERSION = "1.2.6"
+local SCRIPT_VERSION = "1.2.7"
 
 local UPDATE_URL_VERSION = "https://raw.githubusercontent.com/abhiarya531a/UltimateHelper/main/version.txt"
 
@@ -20,6 +20,13 @@ local LOCAL_SCRIPT_PATH  = getWorkingDirectory() .. "\\uhhelper.lua"
 
 local alreadyCheckedUpdate = false
 
+local helperCache = {
+    level = "Unknown",
+    totalNewbie = 0,
+    totalRequests = 0,
+    tours = 0,
+    lastUpdated = 0
+}
 
 
 local requests = require 'requests'
@@ -238,8 +245,8 @@ local helperStats = {
 local waitingHelperStats = false
 
 local NON_RP_KEYWORDS = {
-    "admin", "owner", "boss", "king", "god", "pro", "killer",
-    "hitler", "gta", "rp", "samp", "youtube", "xx", "69", "420"
+    "admin", "owner", "boss", "king", "god", "pro", "killer", "lol", "gaylord", "sex"
+    "hitler", "gta", "rp", "samp", "youtube", "xx", "69", "420", "xxx", "gay", "sexy"
 }
 
 local FAMOUS_NAMES = {
@@ -529,75 +536,44 @@ end
 
 
 function sampev.onServerMessage(color, text)
-    if not waitingHelperStats then return end
-
     local myName = sampGetPlayerNickname(sampGetPlayerIdByCharHandle(PLAYER_PED))
     if not text:find(myName, 1, true) then return end
 
-    waitingHelperStats = false
-
-    -- Extract helper level and name
     local level, name = text:match("^(%w+ Helper)%s+(.+)%s+|")
-    if not level or not name then return end
+    if not level or name ~= myName then return end
 
-    local newbie = tonumber(text:match("Newbie Chats:%s*(%d+)")) or 0
-    local requests = tonumber(text:match("Requests Accepted:%s*(%d+)")) or 0
-    local tours = tonumber(text:match("Tours:%s*(%d+)")) or 0
-
-    sampAddChatMessage("{00FFCC}------ Helper Statistics ------", -1)
-    sampAddChatMessage("{FFFFFF}Helper Name: {00FFCC}" .. name, -1)
-    sampAddChatMessage("{FFFFFF}Helper Level: {00FFCC}" .. level, -1)
-
-    sampAddChatMessage(
-        string.format("{FFFFFF}Newbie chats today: {00FFCC}%d", helperStats.newbieToday),
-        -1
-    )
-
-    sampAddChatMessage(
-        string.format("{FFFFFF}Total Newbie Chats: {00FFCC}%d", newbie),
-        -1
-    )
-
-    sampAddChatMessage(
-        string.format("{FFFFFF}Help Requests Answered today: {00FFCC}%d", helperStats.helpAnsweredToday),
-        -1
-    )
-
-    sampAddChatMessage(
-        string.format("{FFFFFF}Help Requests Answered: {00FFCC}%d", requests),
-        -1
-    )
-
-    sampAddChatMessage(
-        string.format("{FFFFFF}Tours: {00FFCC}%d", tours),
-        -1
-    )
-
-    sampAddChatMessage("{00FFCC}--------------------------------", -1)
+    helperCache.level = level
+    helperCache.totalNewbie = tonumber(text:match("Newbie Chats:%s*(%d+)")) or 0
+    helperCache.totalRequests = tonumber(text:match("Requests Accepted:%s*(%d+)")) or 0
+    helperCache.tours = tonumber(text:match("Tours:%s*(%d+)")) or 0
+    helperCache.lastUpdated = os.time()
 end
+
 
 
 function cmdHelperStats()
-    waitingHelperStats = true
-    sampSendChat("/helpers")
+    if helperCache.lastUpdated == 0 then
+        sampAddChatMessage(
+            "{FF0000}[Ultimate Helper]{FFFFFF} Helper stats not cached yet.",
+            -1
+        )
+        sampAddChatMessage(
+            "{BBBBBB}Tip:{FFFFFF} Stats update automatically when helper list is shown.",
+            -1
+        )
+        return
+    end
 
-    sampAddChatMessage(
-        "{00FFCC}[Ultimate Helper]{FFFFFF} Fetching helper stats...",
-        -1
-    )
-
-    lua_thread.create(function()
-        wait(3000)
-        if waitingHelperStats then
-            waitingHelperStats = false
-            sampAddChatMessage(
-                "{FF0000}[Ultimate Helper]{FFFFFF} Failed to fetch helper stats.",
-                -1
-            )
-        end
-    end)
+    sampAddChatMessage("{00FFCC}------ Helper Statistics ------", -1)
+    sampAddChatMessage("{FFFFFF}Helper Name: {00FFCC}" .. sampGetPlayerNickname(sampGetPlayerIdByCharHandle(PLAYER_PED)), -1)
+    sampAddChatMessage("{FFFFFF}Helper Level: {00FFCC}" .. helperCache.level, -1)
+    sampAddChatMessage("{FFFFFF}Newbie chats today: {00FFCC}" .. helperStats.newbieToday, -1)
+    sampAddChatMessage("{FFFFFF}Total Newbie Chats: {00FFCC}" .. helperCache.totalNewbie, -1)
+    sampAddChatMessage("{FFFFFF}Help Requests Answered today: {00FFCC}" .. helperStats.helpAnsweredToday, -1)
+    sampAddChatMessage("{FFFFFF}Help Requests Answered: {00FFCC}" .. helperCache.totalRequests, -1)
+    sampAddChatMessage("{FFFFFF}Tours: {00FFCC}" .. helperCache.tours, -1)
+    sampAddChatMessage("{00FFCC}--------------------------------", -1)
 end
-
 
 
 function cmdDef(kw)
@@ -3721,6 +3697,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
