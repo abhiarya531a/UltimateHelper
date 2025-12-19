@@ -2,7 +2,7 @@ script_name("Ultimate Helper")
 
 script_author("Mike")
 
-script_version("1.2.5.1")
+script_version("1.2.6")
 
 
 
@@ -10,7 +10,7 @@ local sampev = require 'lib.samp.events'
 
 local json = require 'dkjson'
 
-local SCRIPT_VERSION = "1.2.5.1"
+local SCRIPT_VERSION = "1.2.6"
 
 local UPDATE_URL_VERSION = "https://raw.githubusercontent.com/abhiarya531a/UltimateHelper/main/version.txt"
 
@@ -3529,6 +3529,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
