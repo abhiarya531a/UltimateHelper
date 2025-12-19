@@ -230,8 +230,125 @@ function main()
 
 end
 
+local helperStats = {
+    newbieToday = 0,
+    helpAnsweredToday = 0
+}
 
+local waitingHelperStats = false
 
+local NON_RP_KEYWORDS = {
+    "admin", "owner", "boss", "king", "god", "pro", "killer",
+    "hitler", "gta", "rp", "samp", "youtube", "xx", "69", "420"
+}
+
+local FAMOUS_NAMES = {
+    "harry_potter",
+    "tony_stark",
+    "john_wick",
+    "cristiano_ronaldo",
+    "lionel_messi"
+}
+
+local function calculateRPScore(name)
+    local score = 100
+    local reasons = {}
+
+    -- Format check
+    local first, last = name:match("^([A-Z][a-z]+)_([A-Z][a-z]+)$")
+    if not first or not last then
+        score = score - 35
+        table.insert(reasons, "Invalid format")
+    end
+
+    -- Length realism
+    if first and (#first < 3 or #first > 15) then
+        score = score - 10
+        table.insert(reasons, "Unrealistic first name length")
+    end
+    if last and (#last < 3 or #last > 15) then
+        score = score - 10
+        table.insert(reasons, "Unrealistic last name length")
+    end
+
+    local lname = name:lower()
+
+    -- Repeated characters
+    if lname:find("(.)%1%1") then
+        score = score - 15
+        table.insert(reasons, "Repeated characters")
+    end
+
+    -- Numbers
+    if lname:match("%d") then
+        score = score - 20
+        table.insert(reasons, "Contains numbers")
+    end
+
+    -- Non-RP keywords
+    for _, bad in ipairs(NON_RP_KEYWORDS) do
+        if lname:find(bad, 1, true) then
+            score = score - 15
+            table.insert(reasons, "Non-RP keyword: " .. bad)
+            break
+        end
+    end
+
+    -- Famous characters
+    for _, famous in ipairs(FAMOUS_NAMES) do
+        if lname == famous then
+            score = score - 40
+            table.insert(reasons, "Famous character name")
+            break
+        end
+    end
+
+    -- Clamp score
+    if score < 0 then score = 0 end
+
+    return score, reasons
+end
+
+function cmdIsRPName(param)
+    local id = tonumber(param)
+    if not id or not sampIsPlayerConnected(id) then
+        sampAddChatMessage("{BBBBBB}USAGE:{FFFFFF} /isrpname [playerid]", -1)
+        return
+    end
+
+    local name = sampGetPlayerNickname(id)
+    local score, reasons = calculateRPScore(name)
+
+    local color, verdict
+    if score >= 85 then
+        color = "{00FF00}"
+        verdict = "STRONG RP NAME"
+    elseif score >= 70 then
+        color = "{FFFF00}"
+        verdict = "ACCEPTABLE RP NAME"
+    elseif score >= 50 then
+        color = "{FFA500}"
+        verdict = "WEAK RP NAME"
+    else
+        color = "{FF0000}"
+        verdict = "NON-RP NAME"
+    end
+
+    sampAddChatMessage(
+        string.format(
+            "{00FFCC}[UH]{FFFFFF} %s → %s%s{FFFFFF} (RP Score: %d/100)",
+            name, color, verdict, score
+        ),
+        -1
+    )
+
+    if #reasons > 0 then
+        sampAddChatMessage(
+            "{BBBBBB}Issues:{FFFFFF} " .. table.concat(reasons, ", "),
+            -1
+        )
+    end
+end
 
 
 ----------------------------------------------------
@@ -411,6 +528,77 @@ function getMatchjson(a, kw)
 end
 
 
+function sampev.onServerMessage(color, text)
+    if not waitingHelperStats then return end
+
+    local myName = sampGetPlayerNickname(sampGetPlayerIdByCharHandle(PLAYER_PED))
+    if not text:find(myName, 1, true) then return end
+
+    waitingHelperStats = false
+
+    local level, name = text:match("^(%w+ Helper) (.+) {")
+    if not level then return end
+
+    local newbie = text:match("Newbie Chats: {FFFFFF}(%d+)")
+    local requests = text:match("Requests Accepted: {FFFFFF}(%d+)")
+    local tours = text:match("Tours: {FFFFFF}(%d+)")
+
+    newbie = tonumber(newbie) or 0
+    requests = tonumber(requests) or 0
+    tours = tonumber(tours) or 0
+
+    sampAddChatMessage("{00FFCC}------ Helper Statistics ------", -1)
+    sampAddChatMessage("{FFFFFF}Helper Name: {00FFCC}" .. name, -1)
+    sampAddChatMessage("{FFFFFF}Helper Level: {00FFCC}" .. level, -1)
+
+    sampAddChatMessage(
+        string.format("{FFFFFF}Newbie chats today: {00FFCC}%d", helperStats.newbieToday),
+        -1
+    )
+
+    sampAddChatMessage(
+        string.format("{FFFFFF}Total Newbie Chats: {00FFCC}%d", newbie),
+        -1
+    )
+
+    sampAddChatMessage(
+        string.format("{FFFFFF}Help Requests Answered today: {00FFCC}%d", helperStats.helpAnsweredToday),
+        -1
+    )
+
+    sampAddChatMessage(
+        string.format("{FFFFFF}Help Requests Answered: {00FFCC}%d", requests),
+        -1
+    )
+
+    sampAddChatMessage(
+        string.format("{FFFFFF}Tours: {00FFCC}%d", tours),
+        -1
+    )
+
+    sampAddChatMessage("{00FFCC}--------------------------------", -1)
+end
+
+function cmdHelperStats()
+    waitingHelperStats = true
+    sampSendChat("/helper")
+
+    sampAddChatMessage(
+        "{00FFCC}[Ultimate Helper]{FFFFFF} Fetching helper stats...",
+        -1
+    )
+
+    lua_thread.create(function()
+        wait(3000)
+        if waitingHelperStats then
+            waitingHelperStats = false
+            sampAddChatMessage(
+                "{FF0000}[Ultimate Helper]{FFFFFF} Failed to fetch helper stats.",
+                -1
+            )
+        end
+    end)
+end
 
 
 
@@ -3193,6 +3381,7 @@ function cmdN(msg)
 
 
     if #msg <= limit then
+		helperStats.newbieToday = helperStats.newbieToday + 1
 
         sampSendChat("/newb " .. msg)
 
@@ -3249,6 +3438,7 @@ function cmdAhr(params)
         return
 
     end
+	helperStats.helpAnsweredToday = helperStats.helpAnsweredToday + 1
 
     sampSendChat('/accepthelp ' .. params)
 
@@ -3398,6 +3588,8 @@ function register_commands()
 
         sampAddChatMessage("{FFFFFF}/vehinfo [Name] {BBBBBB}- Vehicle Information", -1)
 
+		sampAddChatMessage("{FFFFFF}/isrpname [ID] {BBBBBB}- Check if a name is a RP Name.", -1)
+
         sampAddChatMessage("{FFFFFF}/cpclear {BBBBBB}- Clear checkpoint/blip", -1)
 
         sampAddChatMessage("{FFFFFF}/hrs {BBBBBB}- Show active help requests", -1)
@@ -3405,6 +3597,7 @@ function register_commands()
         sampAddChatMessage("{FFFFFF}/lvl {BBBBBB}- Calculate the cost of level up", -1)
 
         sampAddChatMessage("{FFFFFF}/n {BBBBBB}- Shortform of /newb", -1)
+        sampAddChatMessage("{FFFFFF}/helperstats {BBBBBB}- Helper Stats", -1)
 
         sampAddChatMessage("{FFFFFF}(/a)ccept(h)elp(r)equest [playerid] {BBBBBB}- Accept Help Request", -1)
 
@@ -3427,6 +3620,11 @@ function register_commands()
 	sampRegisterChatCommand("uhupdates", function()
 
 		sampAddChatMessage("{00FFCC}---- Ultimate Helper Updates ----", -1)
+		sampAddChatMessage("{FFFFFF}v1.2.6 {BBBBBB}- Added /helperstats", -1)
+			
+		sampAddChatMessage("{FFFFFF}v1.2.6 {BBBBBB}- Added /isRpname to check a RP name.", -1)
+		
+		sampAddChatMessage("{FFFFFF}v1.2.5 {BBBBBB}- Various bugs fixed.", -1)
 
 		sampAddChatMessage("{FFFFFF}v1.2.4 {BBBBBB}- Smart /n update.", -1)
 
@@ -3441,12 +3639,6 @@ function register_commands()
 		sampAddChatMessage("{FFFFFF}v1.1.2 {BBBBBB}- Gang List Updated", -1)
 
 		sampAddChatMessage("{FFFFFF}v1.1.1 {BBBBBB}- Added /vehinfo command", -1)
-
-		sampAddChatMessage("{FFFFFF}v1.1.1 {BBBBBB}- Added /iteminfo command", -1)
-
-		sampAddChatMessage("{FFFFFF}v1.1.0 {BBBBBB}- Fixed /locghq command", -1)
-
-		sampAddChatMessage("{FFFFFF}v1.0.0 {BBBBBB}- Initial release", -1)
 
 		sampAddChatMessage("{FFFFFF}-----------------------------", -1)
 
@@ -3498,7 +3690,7 @@ function register_commands()
 
     end)
 
-
+    sampRegisterChatCommand("isrpname", cmdIsRPName)
 
     sampRegisterChatCommand("loc", cmdLoc)
 
@@ -3509,6 +3701,8 @@ function register_commands()
 	sampRegisterChatCommand('ahr', cmdAhr)
 
 	sampRegisterChatCommand('def', cmdDef)
+
+	sampRegisterChatCommand("helperstats", cmdHelperStats)
 
 
 
@@ -3529,6 +3723,7 @@ function register_commands()
     end)
 
 end
+
 
 
 
